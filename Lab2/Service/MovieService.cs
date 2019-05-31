@@ -1,4 +1,5 @@
 ﻿using Lab2.Models;
+using Lab2.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Lab2.Service
     public interface IMovieService
     {
 
-        IEnumerable<Movie> GetAll(DateTime? from = null, DateTime? to = null);
+        PaginatedList<Movie> GetAll(int page, DateTime? from = null, DateTime? to = null);
         Movie GetById(int id);
         Movie Create(Movie movie);
         Movie Upsert(int id, Movie movie);
@@ -45,13 +46,16 @@ namespace Lab2.Service
             return existing;
         }
 
-        public IEnumerable<Movie> GetAll(DateTime? from = null, DateTime? to = null)
+        public PaginatedList<Movie> GetAll(int page ,DateTime? from = null, DateTime? to = null)
         {
-            IQueryable<Movie> result = context.Movies.Include(m => m.Comments);
-            if (from == null && to == null)
-            {
-                return result;
-            }
+            IQueryable<Movie> result = context.Movies
+               .OrderBy(m => m.Id)
+               .Include(c => c.Comments);
+
+            PaginatedList<Movie> paginatedResult = new PaginatedList<Movie>();
+
+            paginatedResult.CurrentPage = page;
+
             if (from != null)
             {
                 result = result.Where(m => m.DateAdded >= from);
@@ -62,7 +66,13 @@ namespace Lab2.Service
             }
             result = result.AsQueryable().OrderByDescending(m => m.YearOfRelease);
 
-            return result;
+            paginatedResult.NumberOfPages = (result.Count() - 1) / PaginatedList<Movie>.EntriesPerPage + 1;
+
+            result = result.Skip((page - 1) * PaginatedList<Movie>.EntriesPerPage)
+                            .Take(PaginatedList<Movie>.EntriesPerPage);
+
+            paginatedResult.Entries = result.ToList();
+            return paginatedResult;
         }
 
 

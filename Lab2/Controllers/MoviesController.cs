@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lab2.Models;
 using Lab2.Service;
+using Lab2.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,9 +33,10 @@ namespace Lab2.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IEnumerable<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to)
+        public PaginatedList<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to, [FromQuery]int page = 1)
         {
-            return movieService.GetAll(from, to);
+            page = Math.Max(page, 1);
+            return movieService.GetAll(page,from, to);
         }
 
 
@@ -42,9 +45,11 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="id">Movie id</param>
         /// <returns>Movie</returns>
-        [HttpGet("{id}", Name = "Get")]
+       
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
+        [HttpGet("{id}", Name = "Get")]
         public IActionResult Get(int id)
         {
             var found = movieService.GetById(id);
@@ -88,6 +93,7 @@ namespace Lab2.Controllers
         /// <param name="movie">The movie to add.</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         [HttpPost]
         public void Post([FromBody] Movie movie)
         {
@@ -129,6 +135,7 @@ namespace Lab2.Controllers
         /// <param name="id">Movie id</param>
         /// <param name="movie">The Movie to update/insert</param>
         /// <returns>Updated/Inserted Movie</returns>
+        [Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -143,6 +150,7 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="id">Movie id</param>
         /// <returns>Deleted Movie</returns>
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
