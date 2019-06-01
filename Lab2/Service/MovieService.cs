@@ -34,9 +34,7 @@ namespace Lab2.Service
 
         public Movie Delete(int id)
         {
-            var existing = context.Movies
-                .Include(m => m.Comments)
-                .FirstOrDefault(movie => movie.Id == id);
+            var existing = context.Movies.Include(e => e.Comments).FirstOrDefault(movie => movie.Id == id);
             if (existing == null)
             {
                 return null;
