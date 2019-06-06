@@ -15,5 +15,8 @@ namespace Lab2.ViewModels
         public string Email { get; set; }
         [StringLength(100, MinimumLength = 6)]
         public string Password { get; set; }
+        [EnumDataType(typeof(Models.UserRole))]
+        public Models.UserRole UserRole { get; set; }
+       public DateTime RegistrationDate { get; set; }
     }
 }

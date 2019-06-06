@@ -11,9 +11,9 @@ namespace Lab2.Service
     public interface IMovieService
     {
 
-        PaginatedList<Movie> GetAll(int page, DateTime? from = null, DateTime? to = null);
+        PaginatedList<MovieGetModel> GetAll(int page, DateTime? from = null, DateTime? to = null);
         Movie GetById(int id);
-        Movie Create(Movie movie);
+        Movie Create(Movie movie, User addedBy);
         Movie Upsert(int id, Movie movie);
         Movie Delete(int id);
     }
@@ -25,8 +25,9 @@ namespace Lab2.Service
             this.context = context;
         }
 
-        public Movie Create(Movie movie)
+        public Movie Create(Movie movie, User addedBy)
         {
+            movie.Owner = addedBy;
             context.Movies.Add(movie);
             context.SaveChanges();
             return movie;
@@ -39,18 +40,23 @@ namespace Lab2.Service
             {
                 return null;
             }
+
+            //foreach( var comment in existing.Comments)
+            //{
+            //    context.Comments.Remove(comment);
+            //}
             context.Movies.Remove(existing);
             context.SaveChanges();
             return existing;
         }
 
-        public PaginatedList<Movie> GetAll(int page ,DateTime? from = null, DateTime? to = null)
+        public PaginatedList<MovieGetModel> GetAll(int page ,DateTime? from = null, DateTime? to = null)
         {
             IQueryable<Movie> result = context.Movies
                .OrderBy(m => m.Id)
                .Include(c => c.Comments);
 
-            PaginatedList<Movie> paginatedResult = new PaginatedList<Movie>();
+            PaginatedList<MovieGetModel> paginatedResult = new PaginatedList<MovieGetModel>();
 
             paginatedResult.CurrentPage = page;
 
@@ -64,12 +70,12 @@ namespace Lab2.Service
             }
             result = result.AsQueryable().OrderByDescending(m => m.YearOfRelease);
 
-            paginatedResult.NumberOfPages = (result.Count() - 1) / PaginatedList<Movie>.EntriesPerPage + 1;
+            paginatedResult.NumberOfPages = (result.Count() - 1) / PaginatedList<MovieGetModel>.EntriesPerPage + 1;
 
-            result = result.Skip((page - 1) * PaginatedList<Movie>.EntriesPerPage)
-                            .Take(PaginatedList<Movie>.EntriesPerPage);
+            result = result.Skip((page - 1) * PaginatedList<MovieGetModel>.EntriesPerPage)
+                            .Take(PaginatedList<MovieGetModel>.EntriesPerPage);
 
-            paginatedResult.Entries = result.ToList();
+            paginatedResult.Entries = result.Select(m=> MovieGetModel.fromMovie(m)).ToList();
             return paginatedResult;
         }
 

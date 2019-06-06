@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Lab2.Models;
 using Lab2.ViewModels;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,6 +20,9 @@ namespace Lab2.Service
         UserGetModel Authenticate(string username, string password);
         IEnumerable<UserGetModel> GetAll();
         UserGetModel Register(RegisterPostModel registerInfo);
+        User GetCurrentUser(HttpContext httpContext);
+        User Delete(int id);
+        User Upsert(int id, User user);
     }
 
     public class UserService : IUserService
@@ -50,7 +55,8 @@ namespace Lab2.Service
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Username.ToString())
+                    new Claim(ClaimTypes.Name, user.Username.ToString()),
+                    new Claim(ClaimTypes.Role, user.UserRole.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -62,14 +68,21 @@ namespace Lab2.Service
                 Id = user.Id,
                 Email = user.Email,
                 Username = user.Username,
-                Token = tokenHandler.WriteToken(token)
+                Token = tokenHandler.WriteToken(token),
+                UserRole=user.UserRole
             };
 
 
             return result;
 
         }
-
+        public User GetCurrentUser(HttpContext httpContext)
+        {
+            string username = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
+            //string accountType = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.AuthenticationMethod).Value;
+            //return _context.Users.FirstOrDefault(u => u.Username == username && u.AccountType.ToString() == accountType);
+            return context.Users.FirstOrDefault(u => u.Username == username);
+        }
         public IEnumerable<UserGetModel> GetAll()
         {
             // return users without passwords
@@ -78,7 +91,9 @@ namespace Lab2.Service
                 Id = user.Id,
                 Email = user.Email,
                 Username = user.Username,
-                Token = null
+                Token = null,
+                UserRole = user.UserRole,
+                registrationDate = user.RegistrationDate 
             });
         }
 
@@ -113,12 +128,45 @@ namespace Lab2.Service
                 LastName = registerInfo.LastName,
                 FirstName = registerInfo.FirstName,
                 Password = ComputeSha256Hash(registerInfo.Password),
-                Username = registerInfo.Username
+                Username = registerInfo.Username,
+                UserRole= registerInfo.UserRole,
 
             });
             context.SaveChanges();
             return Authenticate(registerInfo.Username, registerInfo.Password);
 
         }
+
+        public User Delete(int id)
+        {
+            var existing = context.Users
+                .FirstOrDefault(flower => flower.Id == id);
+            if (existing == null)
+            {
+                return null;
+            }
+            context.Users.Remove(existing);
+            context.SaveChanges();
+
+            return existing;
+        }
+
+        public User Upsert(int id, User user)
+        {
+            var existing = context.Users.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            if (existing == null)
+            {
+                context.Users.Add(user);
+                context.SaveChanges();
+                return user;
+            }
+            user.Id = id;
+            user.UserRole = existing.UserRole;
+           
+            context.Users.Update(user);
+            context.SaveChanges();
+            return user;
+        }
+
     }
 }

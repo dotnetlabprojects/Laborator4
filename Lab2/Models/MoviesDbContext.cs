@@ -18,6 +18,11 @@ namespace Lab2.Models
                 entity.HasIndex(u => u.Username).IsUnique();
                 entity.HasIndex("Username");
             });
+
+            builder.Entity<Comment>()
+                .HasOne(c => c.Movie)
+                .WithMany(m => m.Comments)
+                .OnDelete(DeleteBehavior.Cascade);
         }
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Comment> Comments { get; set; }

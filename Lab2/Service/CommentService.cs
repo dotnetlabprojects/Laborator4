@@ -11,8 +11,12 @@ namespace Lab2.Service
     public interface ICommentService
     {
 
-        IEnumerable<CommentGetModel> GetAll(string filter);
-        
+        PaginatedList<CommentGetModel> GetAll(int page, string filter);
+        Comment GetById(int id);
+        Comment Create(Comment comment, User addedBy);
+        Comment Upsert(int id, Comment expense);
+        Comment Delete(int id);
+
     }
 
     public class CommentService : ICommentService
@@ -23,47 +27,67 @@ namespace Lab2.Service
             this.context = context;
         }
 
-        //public IEnumerable<CommentGetModel> GetAll(string filter)
-        //{
-        //    IQueryable<Comment> result = context.Comments;
 
-        //    result = result.Where(c => c.Text.Contains(filter));
-
-        //    return result.Select(c => CommentGetModel.FromComment(c));
-        //}
-
-        public IEnumerable<CommentGetModel> GetAll(string filter)
+        public Comment Create(Comment comment, User addedBy)
         {
-            IQueryable<Movie> result = context.Movies.Include(c => c.Comments);
+            comment.Owner = addedBy;
+            context.Comments.Add(comment);
+            context.SaveChanges();
+            return comment;
+        }
+       
 
-            List<CommentGetModel> resultComments = new List<CommentGetModel>();
-
-            foreach (Movie m in result)
+        public Comment Delete(int id)
+        {
+            var existing = context.Comments.FirstOrDefault(comment => comment.Id == id);
+            if (existing == null)
             {
-                m.Comments.ForEach(c =>
-                {
-
-                    if (c.Text.Contains(filter))
-                    {
-                        CommentGetModel comment = new CommentGetModel
-                        {
-                            Id = c.Id,
-                            Important = c.Important,
-                            Text = c.Text,
-                            MovieId = m.Id
-
-                        };
-                        resultComments.Add(comment);
-
-                    }
-                });
+                return null;
             }
+            context.Comments.Remove(existing);
+            context.SaveChanges();
+            return existing;
+        }
 
-            return resultComments;
+        public PaginatedList<CommentGetModel> GetAll(int page, string filter)
+        {
+            IQueryable<Comment> result = context
+                .Comments
+                .Where(c => string.IsNullOrEmpty(filter) || c.Text.Contains(filter))
+                .OrderBy(c => c.Id)
+                .Include(c => c.Movie);
+            var paginatedResult = new PaginatedList<CommentGetModel>();
+            paginatedResult.CurrentPage = page;
+
+            paginatedResult.NumberOfPages = (result.Count() - 1) / PaginatedList<CommentGetModel>.EntriesPerPage + 1;
+            result = result
+                .Skip((page - 1) * PaginatedList<CommentGetModel>.EntriesPerPage)
+                .Take(PaginatedList<CommentGetModel>.EntriesPerPage);
+            paginatedResult.Entries = result.Select(c => CommentGetModel.FromComment(c)).ToList();
+
+            return paginatedResult;
+        }
+
+        public Comment Upsert(int id, Comment comment)
+        {
+            var existing = context.Comments.AsNoTracking().FirstOrDefault(c => c.Id == id);
+            if (existing == null)
+            {
+                context.Comments.Add(comment);
+                context.SaveChanges();
+                return comment;
+            }
+            comment.Id = id;
+            context.Comments.Update(comment);
+            context.SaveChanges();
+            return comment;
+        }
+
+        public Comment GetById(int id)
+        {
+            return context.Comments.FirstOrDefault(c => c.Id == id);
         }
 
 
-
-
-        }
+    }
 }

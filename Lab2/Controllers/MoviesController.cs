@@ -18,9 +18,12 @@ namespace Lab2.Controllers
     {
 
         private IMovieService movieService;
-        public MoviesController(IMovieService movieService)
+        private IUserService userService;
+
+        public MoviesController(IMovieService movieService, IUserService userService)
         {
             this.movieService = movieService;
+            this.userService = userService;
         }
 
         /// <summary>
@@ -31,29 +34,39 @@ namespace Lab2.Controllers
         /// <returns>A list of Movie objects.</returns>
         // GET: api/Movies
         [HttpGet]
+        [Authorize(Roles = "Regular,Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public PaginatedList<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to, [FromQuery]int page = 1)
+        public PaginatedList<MovieGetModel> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to, [FromQuery]int page = 1)
         {
+            User addedBy = userService.GetCurrentUser(HttpContext);
             page = Math.Max(page, 1);
-            return movieService.GetAll(page,from, to);
+            if (addedBy.UserRole == UserRole.UserManager)
+            {
+                return null;
+            }
+            return movieService.GetAll(page, from, to);
+
         }
 
 
         /// <summary>
-        /// GET MOVIE BY ID
+        ///  GET: GET COMMENT
         /// </summary>
         /// <param name="id">Movie id</param>
         /// <returns>Movie</returns>
-       
+
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize]
-        [HttpGet("{id}", Name = "Get")]
+        [Authorize(Roles = "Regular,Admin")]
+        [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
             var found = movieService.GetById(id);
-            if (found == null)
+
+            User addedBy = userService.GetCurrentUser(HttpContext);
+
+            if (found == null && addedBy.UserRole != UserRole.Regular)
             {
                 return NotFound();
             }
@@ -93,11 +106,16 @@ namespace Lab2.Controllers
         /// <param name="movie">The movie to add.</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Authorize]
+        [Authorize(Roles = "Regular,Admin")]
         [HttpPost]
-        public void Post([FromBody] Movie movie)
+        public IActionResult Post([FromBody] Movie movie)
         {
-            movieService.Create(movie);
+            User addedBy = userService.GetCurrentUser(HttpContext);
+            if (addedBy.UserRole == UserRole.UserManager)
+            {
+                return Forbid();
+            }
+               return Ok(movieService.Create(movie,addedBy));
         }
 
         /// <summary>
@@ -135,13 +153,21 @@ namespace Lab2.Controllers
         /// <param name="id">Movie id</param>
         /// <param name="movie">The Movie to update/insert</param>
         /// <returns>Updated/Inserted Movie</returns>
-        [Authorize]
+        [Authorize(Roles = "Regular,Admin")]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Put(int id, [FromBody] Movie movie)
         {
             var result = movieService.Upsert(id, movie);
+
+            User addedBy = userService.GetCurrentUser(HttpContext);
+
+            if (addedBy.UserRole == UserRole.UserManager)
+            {
+                return Forbid();
+            }
+
             return Ok(result);
         }
 
@@ -150,14 +176,17 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="id">Movie id</param>
         /// <returns>Deleted Movie</returns>
-        [Authorize]
+        [Authorize(Roles = "Regular,Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Delete(int id)
         {
             var result = movieService.Delete(id);
-            if (result == null)
+
+            User addedBy = userService.GetCurrentUser(HttpContext);
+
+            if (result == null && addedBy.UserRole == UserRole.UserManager)
             {
                 return NotFound();
             }
