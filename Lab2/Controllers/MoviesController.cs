@@ -51,7 +51,7 @@ namespace Lab2.Controllers
 
 
         /// <summary>
-        ///  GET: GET COMMENT
+        ///  GET: GET MOVIE
         /// </summary>
         /// <param name="id">Movie id</param>
         /// <returns>Movie</returns>
@@ -111,11 +111,14 @@ namespace Lab2.Controllers
         public IActionResult Post([FromBody] Movie movie)
         {
             User addedBy = userService.GetCurrentUser(HttpContext);
+
+          Movie result =  movieService.Create(movie, addedBy);
+
             if (addedBy.UserRole == UserRole.UserManager)
             {
                 return Forbid();
             }
-               return Ok(movieService.Create(movie,addedBy));
+               return Ok();
         }
 
         /// <summary>

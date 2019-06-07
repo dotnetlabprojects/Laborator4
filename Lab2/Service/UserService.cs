@@ -130,6 +130,7 @@ namespace Lab2.Service
                 Password = ComputeSha256Hash(registerInfo.Password),
                 Username = registerInfo.Username,
                 UserRole= registerInfo.UserRole,
+                RegistrationDate= DateTime.Now
 
             });
             context.SaveChanges();

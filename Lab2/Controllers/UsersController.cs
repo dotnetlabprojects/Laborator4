@@ -51,7 +51,7 @@ namespace Lab2.Controllers
 
             User addedBy = _userService.GetCurrentUser(HttpContext);
 
-            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) < date && registerModel.UserRole == UserRole.UserManager))
+            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && registerModel.UserRole == UserRole.UserManager))
             {
                 return Forbid();
             }
@@ -82,7 +82,7 @@ namespace Lab2.Controllers
                 return Forbid();
             }
 
-           if (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) < date )
+           if (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date )
             {
                 List<UserGetModel> result = new List<UserGetModel>();
 
@@ -123,7 +123,7 @@ namespace Lab2.Controllers
 
             var date = DateTime.Now;
 
-            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) < date && user.UserRole == UserRole.UserManager))
+            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
             {
                 return Forbid();
             }
@@ -151,7 +151,7 @@ namespace Lab2.Controllers
 
             UserGetModel user = users.FirstOrDefault(u => u.Id == id);
 
-            if ((addedBy.UserRole == UserRole.Regular) || (user!=null && addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) < date && user.UserRole == UserRole.UserManager))
+            if ((addedBy.UserRole == UserRole.Regular) || (user!=null && addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
             {
                 return Forbid();
             }
