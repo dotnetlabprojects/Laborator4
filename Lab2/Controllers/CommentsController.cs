@@ -39,10 +39,10 @@ namespace Lab2.Controllers
         public PaginatedList<CommentGetModel> Get([FromQuery]string filter, [FromQuery]int page = 1)
         {
             User addedBy = userService.GetCurrentUser(HttpContext);
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return null;
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return null;
+            //}
             page = Math.Max(page, 1);
             return commentService.GetAll(page, filter);
 
@@ -63,10 +63,10 @@ namespace Lab2.Controllers
 
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (found == null && addedBy.UserRole == UserRole.UserManager)
-            {
-                return Forbid();
-            }
+            //if (found == null && addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return Forbid();
+            //}
             return Ok(found);
         }
 
@@ -88,10 +88,10 @@ namespace Lab2.Controllers
         public IActionResult Post([FromBody] Comment comment)
         {
             User addedBy = userService.GetCurrentUser(HttpContext);
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return Forbid();
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return Forbid();
+            //}
 
             return Ok(commentService.Create(comment, addedBy));
         }
@@ -113,10 +113,10 @@ namespace Lab2.Controllers
             var result = commentService.Upsert(id, comment);
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return Forbid();
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return Forbid();
+            //}
 
             return Ok(comment);
         }
@@ -136,10 +136,10 @@ namespace Lab2.Controllers
 
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (result == null && addedBy.UserRole == UserRole.UserManager)
-            {
-                return NotFound();
-            }
+            //if (result == null && addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return NotFound();
+            //}
             return Ok(result);
         }
 

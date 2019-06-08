@@ -4,14 +4,16 @@ using Lab2.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Lab2.Migrations
 {
     [DbContext(typeof(MoviesDbContext))]
-    partial class MoviesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190607174309_MakeUsersAndRolesManyToMany")]
+    partial class MakeUsersAndRolesManyToMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -106,13 +108,13 @@ namespace Lab2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description");
+                    b.Property<int>("Description");
 
                     b.Property<string>("Name");
 
                     b.HasKey("ID");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRole");
                 });
 
             modelBuilder.Entity("Lab2.Models.UserUserRol", b =>
@@ -120,10 +122,6 @@ namespace Lab2.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime?>("EndTime");
-
-                    b.Property<DateTime>("StartTime");
 
                     b.Property<int>("UserId");
 
@@ -135,7 +133,7 @@ namespace Lab2.Migrations
 
                     b.HasIndex("UserRoleId");
 
-                    b.ToTable("UserUserRols");
+                    b.ToTable("UserUserRol");
                 });
 
             modelBuilder.Entity("Lab2.Models.Comment", b =>

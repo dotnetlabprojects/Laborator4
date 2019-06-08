@@ -56,7 +56,7 @@ namespace Lab2.Service
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Username.ToString()),
-                    new Claim(ClaimTypes.Role, user.UserRole.ToString())
+                  //  new Claim(ClaimTypes.Role, user.UserRole.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -69,19 +69,26 @@ namespace Lab2.Service
                 Email = user.Email,
                 Username = user.Username,
                 Token = tokenHandler.WriteToken(token),
-                UserRole=user.UserRole
+             //   UserRole=user.UserRole
             };
 
 
             return result;
 
         }
+        public UserRole GetCurrentUserRole(User user)
+        {
+            return user
+                .UserUserRols
+                .FirstOrDefault(userUserRole => userUserRole.EndTime == null)
+                .UserRole;
+        }
         public User GetCurrentUser(HttpContext httpContext)
         {
             string username = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
             //string accountType = httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.AuthenticationMethod).Value;
             //return _context.Users.FirstOrDefault(u => u.Username == username && u.AccountType.ToString() == accountType);
-            return context.Users.FirstOrDefault(u => u.Username == username);
+            return context.Users.Include(u=> u.UserUserRols).FirstOrDefault(u => u.Username == username);
         }
         public IEnumerable<UserGetModel> GetAll()
         {
@@ -91,9 +98,10 @@ namespace Lab2.Service
                 Id = user.Id,
                 Email = user.Email,
                 Username = user.Username,
-                Token = null,
-                UserRole = user.UserRole,
-                registrationDate = user.RegistrationDate 
+                Token = null
+                
+              //  UserRole = user.UserRole,
+              //  registrationDate = user.RegistrationDate 
             });
         }
 
@@ -122,17 +130,34 @@ namespace Lab2.Service
             {
                 return null;
             }
-            context.Users.Add(new User
+
+            User toAdd = new User
             {
                 Email = registerInfo.Email,
                 LastName = registerInfo.LastName,
                 FirstName = registerInfo.FirstName,
                 Password = ComputeSha256Hash(registerInfo.Password),
                 Username = registerInfo.Username,
-                UserRole= registerInfo.UserRole,
-                RegistrationDate= DateTime.Now
+                UserUserRols = new List<UserUserRol>()
+                //     UserRole= registerInfo.UserRole,
+                //     RegistrationDate= DateTime.Now
+            };
 
+            var regularRole = context
+               .UserRoles
+               .FirstOrDefault(ur => ur.Name == UserRoles.Regular);
+
+
+
+            context.UserUserRols.Add(new UserUserRol
+            {
+                User = toAdd,
+                StartTime= DateTime.Now,
+                UserRole = regularRole,
+                EndTime = null,
+            
             });
+            context.Users.Add(toAdd);
             context.SaveChanges();
             return Authenticate(registerInfo.Username, registerInfo.Password);
 
@@ -162,7 +187,7 @@ namespace Lab2.Service
                 return user;
             }
             user.Id = id;
-            user.UserRole = existing.UserRole;
+           // user.UserRole = existing.UserRole;
            
             context.Users.Update(user);
             context.SaveChanges();

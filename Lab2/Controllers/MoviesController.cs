@@ -41,10 +41,10 @@ namespace Lab2.Controllers
         {
             User addedBy = userService.GetCurrentUser(HttpContext);
             page = Math.Max(page, 1);
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return null;
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return null;
+            //}
             return movieService.GetAll(page, from, to);
 
         }
@@ -66,10 +66,10 @@ namespace Lab2.Controllers
 
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (found == null && addedBy.UserRole != UserRole.Regular)
-            {
-                return NotFound();
-            }
+            //if (found == null && addedBy.UserRole != UserRole.Regular)
+            //{
+            //    return NotFound();
+            //}
             return Ok(found);
         }
 
@@ -114,10 +114,10 @@ namespace Lab2.Controllers
 
           Movie result =  movieService.Create(movie, addedBy);
 
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return Forbid();
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return Forbid();
+            //}
                return Ok();
         }
 
@@ -166,10 +166,10 @@ namespace Lab2.Controllers
 
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (addedBy.UserRole == UserRole.UserManager)
-            {
-                return Forbid();
-            }
+            //if (addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return Forbid();
+            //}
 
             return Ok(result);
         }
@@ -189,10 +189,10 @@ namespace Lab2.Controllers
 
             User addedBy = userService.GetCurrentUser(HttpContext);
 
-            if (result == null && addedBy.UserRole == UserRole.UserManager)
-            {
-                return NotFound();
-            }
+            //if (result == null && addedBy.UserRole == UserRole.UserManager)
+            //{
+            //    return NotFound();
+            //}
             return Ok(result);
         }
     }

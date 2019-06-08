@@ -42,19 +42,19 @@ namespace Lab2.Controllers
         /// </summary>
         /// <param name="registerModel">registerModel the user to create</param>
         /// <returns></returns>
-        [Authorize(Roles = "UserManager,Admin")]
+       // [Authorize(Roles = "UserManager,Admin")]
         [AllowAnonymous]
         [HttpPost("register")]
         public IActionResult Register([FromBody]RegisterPostModel registerModel)
         {
-            var date = DateTime.Now;
+          //  var date = DateTime.Now;
 
-            User addedBy = _userService.GetCurrentUser(HttpContext);
+          //  User addedBy = _userService.GetCurrentUser(HttpContext);
 
-            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && registerModel.UserRole == UserRole.UserManager))
-            {
-                return Forbid();
-            }
+            //if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && registerModel.UserRole == UserRole.UserManager))
+            //{
+            //    return Forbid();
+            //}
 
             var user = _userService.Register(registerModel);
            
@@ -69,7 +69,8 @@ namespace Lab2.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "UserManager,Admin")]
+        // [Authorize(Roles = "UserManager,Admin")]
+        [AllowAnonymous]
         public IActionResult GetAll()
         {
             var users = _userService.GetAll();
@@ -77,30 +78,30 @@ namespace Lab2.Controllers
 
             User addedBy = _userService.GetCurrentUser(HttpContext);
 
-           if(addedBy.UserRole == UserRole.Regular)
-            {
-                return Forbid();
-            }
+           //if(addedBy.UserRole == UserRole.Regular)
+           // {
+           //     return Forbid();
+           // }
 
-           if (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date )
-            {
-                List<UserGetModel> result = new List<UserGetModel>();
+           //if (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date )
+           // {
+           //     List<UserGetModel> result = new List<UserGetModel>();
 
-                foreach( UserGetModel user in users)
-                {
-                    if (!user.UserRole.ToString().Equals("UserManager"))
-                    {
-                       result.Add(user);
-                    }
-                }
+           //     foreach( UserGetModel user in users)
+           //     {
+           //         if (!user.UserRole.ToString().Equals("UserManager"))
+           //         {
+           //            result.Add(user);
+           //         }
+           //     }
 
-                return Ok(result);
-            }
+           //     return Ok(result);
+           // }
 
-            else
-            {
+           // else
+           // {
                 return Ok(users);
-            }
+            //}
         }
 
 
@@ -123,10 +124,10 @@ namespace Lab2.Controllers
 
             var date = DateTime.Now;
 
-            if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
-            {
-                return Forbid();
-            }
+            //if ((addedBy.UserRole == UserRole.Regular) || (addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
+            //{
+            //    return Forbid();
+            //}
 
             var result = _userService.Upsert(id, user);
 
@@ -151,10 +152,10 @@ namespace Lab2.Controllers
 
             UserGetModel user = users.FirstOrDefault(u => u.Id == id);
 
-            if ((addedBy.UserRole == UserRole.Regular) || (user!=null && addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
-            {
-                return Forbid();
-            }
+            //if ((addedBy.UserRole == UserRole.Regular) || (user!=null && addedBy.UserRole == UserRole.UserManager && addedBy.RegistrationDate.AddMonths(6) > date && user.UserRole == UserRole.UserManager))
+            //{
+            //    return Forbid();
+            //}
             var result = _userService.Delete(id);
 
             if (result == null)
