@@ -69,7 +69,8 @@ namespace Lab2.Service
                 Email = user.Email,
                 Username = user.Username,
                 Token = tokenHandler.WriteToken(token),
-                UserRole=user.UserRole
+                UserRole=user.UserRole,
+                registrationDate = user.RegistrationDate
             };
 
 

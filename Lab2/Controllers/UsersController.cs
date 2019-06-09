@@ -105,7 +105,7 @@ namespace Lab2.Controllers
 
 
         /// <summary>
-        ///  PUT: UPSERT USER (Update/Insert Movie)
+        ///  PUT: UPSERT USER (Update/Insert User)
         /// </summary>
         /// <param name="id">the user id to upsert</param>
         /// <param name="user">User to upsert</param>
